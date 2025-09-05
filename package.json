@@ -1,12 +1,12 @@
 {
-  "name": "plugin-sample-vite-vue",
+  "name": "siyuan-lsky-upload",
   "version": "0.0.1",
   "type": "module",
-  "description": "This is a sample plugin based on vite and vue for Siyuan (https://b3log.org/siyuan)",
-  "author": "",
+  "description": "在思源笔记中一键上传图片到 Lsky 图床",
+  "author": "hausen1012",
   "license": "MIT",
   "homepage": "",
-  "repository": "",
+  "repository": "https://github.com/hausen1012/siyuan-lsky-upload",
   "scripts": {
     "dev": "vite build --watch",
     "release": "node ./release.js",

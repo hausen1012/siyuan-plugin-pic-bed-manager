@@ -9,3 +9,5 @@ dist
 build
 tmp
 .env
+
+.pnpm-store

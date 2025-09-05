@@ -1,7 +1,7 @@
 {
-  "name": "plugin-sample-vite-vue",
-  "author": "wetoria",
-  "url": "https://github.com/Wetoria/plugin-sample-vite-vue",
+  "name": "siyuan-lsky-upload",
+  "author": "hausen1012",
+  "url": "https://github.com/hausen1012/siyuan-lsky-upload",
   "version": "0.0.1",
   "minAppVersion": "2.10.14",
   "backends": [
@@ -11,14 +11,14 @@
     "all"
   ],
   "displayName": {
-    "default": "plugin-sample-vite-vue",
-    "en_US": "plugin-sample-vite-vue",
-    "zh_CN": "plugin-sample-vite-vue"
+    "default": "siyuan-lsky-upload",
+    "en_US": "siyuan-lsky-upload",
+    "zh_CN": "siyuan-lsky-upload"
   },
   "description": {
-    "default": "plugin-sample-vite-vue",
-    "en_US": "plugin-sample-vite-vue",
-    "zh_CN": "plugin-sample-vite-vue"
+    "default": "siyuan-lsky-upload",
+    "en_US": "siyuan-lsky-upload",
+    "zh_CN": "siyuan-lsky-upload"
   },
   "readme": {
     "default": "README.md",
