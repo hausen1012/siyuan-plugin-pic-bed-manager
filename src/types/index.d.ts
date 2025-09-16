@@ -122,7 +122,7 @@ interface Window {
     ws: any;
     languages: any;
   };
-  _sy_plugin_sample: {
+  _sy_plugin_lsky_upload: {
     [key: string]: any;
   };
 }

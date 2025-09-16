@@ -1,6 +1,4 @@
-import {
-  Plugin,
-} from "siyuan";
+import { Plugin } from "siyuan";
 import { createApp } from 'vue'
 import App from './App.vue'
 
@@ -33,5 +31,7 @@ export function init(plugin: Plugin) {
 export function destroy() {
   app.unmount()
   const div = document.getElementById(this.name)
-  document.body.removeChild(div)
+  if (div && div.parentNode) {  // 确保 div 存在且有父节点
+    div.parentNode.removeChild(div)
+  }
 }

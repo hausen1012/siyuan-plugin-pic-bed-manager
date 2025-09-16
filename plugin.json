@@ -1,7 +1,7 @@
 {
-  "name": "siyuan-lsky-upload",
+  "name": "siyuan-plugin-img-upload",
   "author": "hausen1012",
-  "url": "https://github.com/hausen1012/siyuan-lsky-upload",
+  "url": "https://github.com/hausen1012/siyuan-plugin-img-upload",
   "version": "0.0.1",
   "minAppVersion": "2.10.14",
   "backends": [
@@ -11,14 +11,14 @@
     "all"
   ],
   "displayName": {
-    "default": "siyuan-lsky-upload",
-    "en_US": "siyuan-lsky-upload",
-    "zh_CN": "siyuan-lsky-upload"
+    "default": "siyuan-plugin-img-upload",
+    "en_US": "siyuan-plugin-img-upload",
+    "zh_CN": "siyuan-plugin-img-upload"
   },
   "description": {
-    "default": "siyuan-lsky-upload",
-    "en_US": "siyuan-lsky-upload",
-    "zh_CN": "siyuan-lsky-upload"
+    "default": "siyuan-plugin-img-upload",
+    "en_US": "siyuan-plugin-img-upload",
+    "zh_CN": "siyuan-plugin-img-upload"
   },
   "readme": {
     "default": "README.md",

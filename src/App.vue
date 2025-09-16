@@ -1,241 +1,113 @@
 <template>
-  <div class="plugin-app-main">
-
-    <div class="demo">
-      <!-- Show text in siyuan at center -->
-      <div>Hello Siyuan.</div>
-
-
-      <div>
-        Use Siyuan Style components
-      </div>
-      <div class="row">
-        Checkbox:
-        <SyCheckbox
-          v-model="isChecked"
-        />
-        ({{ isChecked ? 'checked' : 'unchecked' }})
-      </div>
-      <div class="row">
-        <SyIcon
-          name="iconSiYuan"
-        />
-        <SyIcon
-          name="iconSiYuan"
-          size="20px"
-        />
-        <SyIcon
-          name="iconSiYuan"
-          size="30px"
-        />
-      </div>
-      <div class="col">
+  <div class="plugin-app-main flex justify-center items-center min-h-[400px]">
+    <div class="bg-white shadow-lg rounded-2xl p-6 w-[420px]">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">
+          图床地址
+        </label>
         <SyInput
-          v-model="inputValue"
+          v-model="form.baseUrl"
+          placeholder="例如：https://lsky.example.com"
         />
-        <div>
-          {{ inputValue }}
-        </div>
       </div>
-      <div class="col">
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">
+          邮箱
+        </label>
+        <SyInput v-model="form.email" placeholder="请输入邮箱" />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">
+          密码
+        </label>
+        <SyInput type="password" v-model="form.password" placeholder="请输入密码" />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-600 mb-1">
+          存储策略 ID
+        </label>
+        <SyInput type="number" v-model="form.strategyId" placeholder="默认 1，可选" />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-600 mb-1">
+          指定笔记本
+        </label>
         <SySelect
-          v-model="selectValue"
-          :options="selectOptions"
+          v-model="form.notebookId"
+          :options="notebookList"
         />
-        <div>
-          selected value: {{ selectValue }}
-        </div>
-        <div>
-          selected text: {{ selectOptions.find(option => option.value === selectValue)?.text }}
-        </div>
       </div>
 
-      <div class="col">
-        <SyTextarea
-          v-model="textareaValue"
-        />
-        <div>
-          {{ textareaValue }}
-        </div>
-      </div>
       <SyButton
-        @click="showAllValues"
+        class="w-full bg-blue-600 text-white rounded-xl py-2 hover:bg-blue-700 transition"
+        @click="saveConfig"
       >
-        Show All Values
-      </SyButton>
-      <SyButton
-        @click="openSetting"
-      >
-        Open Setting
+        保存配置
       </SyButton>
 
-      <Teleport
-        :to="statusRef"
-        v-if="statusRef"
+      <div
+        v-if="saved"
+        class="mt-4 text-green-600 text-center text-sm font-medium"
       >
-        <SyIcon
-          name="iconHeart"
-          style="
-            color: green;
-          "
-        />
-      </Teleport>
+        ✅ 配置已保存！
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import SyButton from '@/components/SiyuanTheme/SyButton.vue'
-import SyCheckbox from '@/components/SiyuanTheme/SyCheckbox.vue'
-import SyIcon from '@/components/SiyuanTheme/SyIcon.vue'
-import SyInput from '@/components/SiyuanTheme/SyInput.vue'
-import SySelect from '@/components/SiyuanTheme/SySelect.vue'
-import SyTextarea from '@/components/SiyuanTheme/SyTextarea.vue'
-import { usePlugin } from '@/main'
-import { onMounted, ref, watchEffect } from 'vue'
+import { ref, inject, onMounted } from "vue"
+import SyButton from "@/components/SiyuanTheme/SyButton.vue"
+import SyInput from "@/components/SiyuanTheme/SyInput.vue"
+import SySelect from "@/components/SiyuanTheme/SySelect.vue"
+import { Plugin } from "siyuan"
+import Client from "@/utils/sdk"
+import { Config } from "@/interface"
 
+const plugin = inject<Plugin>("plugin")
+const configFile = inject<string>("configFile")
 
-const isChecked = ref(false)
-
-const inputValue = ref('')
-
-const selectValue = ref()
-const selectOptions = ref([
-  { value: '1', text: 'Option 1' },
-  { value: '2', text: 'Option 2' },
-  { value: '3', text: 'Option 3' },
-])
-
-const textareaValue = ref('')
-
-const showAllValues = () => {
-  alert(`
-    isChecked: ${isChecked.value}
-    inputValue: ${inputValue.value}
-    selectValue: ${selectValue.value}
-    textareaValue: ${textareaValue.value}
-  `)
-}
-
-const openSetting = () => {
-  alert('Need open plugin setting.')
-}
-
-const plugin = usePlugin()
-console.log('plugin is ', plugin)
-
-
-// add top bar button
-plugin.addTopBar({
-  icon: 'iconHeart',
-  title: 'Plugin Sample',
-  callback: () => {
-    alert('Hello Siyuan.')
-  },
+const form = ref<Config>({
+  notebookId: "",
+  baseUrl: "",
+  email: "",
+  password: "",
+  strategyId: 1,
 })
 
-const statusRef = ref<HTMLDivElement>()
-watchEffect(() => {
-  console.log('statusRef is ', statusRef.value)
-})
-// two ways to add status bar
-onMounted(() => {
-  // 1. use Teleport in Vue way
-  // show as a green heart icon
-  const status = document.getElementById('status') as HTMLDivElement
-  if (status) {
-    // delay 5 seconds to bind statusRef
-    // avoid status is not ready
-    setTimeout(() => {
-      statusRef.value = status
-    }, 5000)
+const notebookList = ref([])
+
+
+const saved = ref(false)
+
+async function saveConfig() {
+  try {
+    await plugin.saveData(configFile, form.value)
+    saved.value = true
+    setTimeout(() => (saved.value = false), 3000)
+  } catch (e) {
+    console.error("保存失败", e)
   }
+}
 
+onMounted(async () => {
+  try {
+    // 读取数据，如果不存在就用默认配置
+    const data = await plugin.loadData(configFile)
+    form.value = data ?? form.value
 
-  // 2. use addStatusBar in siyuan plugin way
-  // show as a red heart icon
-  const tempStatus = document.createElement('div')
-  tempStatus.classList.add('temp-status')
-  tempStatus.innerHTML = `
-    <svg style="width: 12px; height: 12px; color: red;">
-      <use xlink:href="#iconHeart"></use>
-    </svg>
-  `
-
-  plugin.addStatusBar({
-    element: tempStatus,
-    position: 'right',
-  })
-})
-
-
-onMounted(() => {
-  window._sy_plugin_sample = {}
-  window._sy_plugin_sample.openSetting = openSetting
+    Client.lsNotebooks().then(response => {
+      notebookList.value = response.data.notebooks.map(nb => ({
+        text: nb.name, 
+        value: nb.id
+      }))
+    })
+  } catch {
+    console.log("没有已有配置，使用默认值")
+  }
 })
 </script>
-
-
-<!-- 局部样式 -->
-<style lang="scss" scoped>
-.plugin-app-main {
-  width: 100%;
-  height: 100%;
-  max-height: 100vh;
-  box-sizing: border-box;
-  pointer-events: none;
-
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: nowrap;
-
-  .demo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    pointer-events: auto;
-
-    z-index: 10;
-
-    background-color: var(--b3-theme-surface);
-    border-radius: var(--b3-border-radius);
-    border: 1px solid var(--b3-border-color);
-    padding: 16px;
-  }
-}
-</style>
-
-<!-- 全局样式 -->
-<style lang="scss">
-.plugin-sample-vite-vue-app {
-  width: 100vw;
-  height: 100dvh;
-  max-height: 100vh;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  pointer-events: none;
-  box-sizing: border-box;
-}
-
-.row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-.col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-</style>
