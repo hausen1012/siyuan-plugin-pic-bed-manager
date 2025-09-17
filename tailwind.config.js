@@ -1,9 +1,11 @@
-export default {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
-    './index.html',            // html 文件
-    './src/**/*.{vue,ts,js}',  // 所有 Vue / JS / TS 文件
+    "./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {},
   },
+  plugins: [],
 }

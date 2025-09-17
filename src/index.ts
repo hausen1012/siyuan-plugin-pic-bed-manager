@@ -1,155 +1,118 @@
-import {
-  Plugin,
-  showMessage,
-  Dialog
-} from "siyuan";
-import "@/index.scss";
-import { LskyUploader } from "@/utils/lsky"
-import Client from "@/utils/sdk"
+import { Plugin, showMessage, Dialog } from "siyuan"
+import { createApp } from "vue"
+import App from "./App.vue"
 import { getCaretNodeId } from "./utils"
-import { IResponse } from "@siyuan-community/siyuan-sdk/dist/src/types/kernel/kernel";
-import App from "@/App.vue";
-import { createApp } from "vue";
-import "./assets/index.css"
-import { Config } from "@/interface"
-
+import "@/assets/tailwind.css"
+import "@/index.scss"
+import { registerPlugin, loadConfig } from "@/utils/configManager"
+import { upload } from "@/uploaders/Uploader"
+import { resolveFiles } from "@/utils/file"
+ 
 export default class ImgUploadPlugin extends Plugin {
 
-  private configFile = "config.json"
-
-  private config = {
-    notebookId: "",
-    baseUrl: "",
-    email: "",
-    password: "",
-    strategyId: 1,
-  }
-
   async onload() {
-    const data = await this.loadData(this.configFile)
-    this.config = data ?? this.config
+    registerPlugin(this)
+    await loadConfig()
+    //showMessage("图床配置加载成功", 3000, "info")
   }
 
   openSetting() {
-    // 创建 Vue 应用并挂载到 Dialog 内部
-    const app = createApp(App);
-    // 假设你有一个自定义 Dialog 类
-    let dialog = new Dialog({
+    const app = createApp(App)
+    const dialog = new Dialog({
       title: "图床设置",
-      content: `<div id="SettingPanel" style="height: 100%;"></div>`,
+      content: `<div id="SettingPanel" style="height:100%;"></div>`,
       width: "800px",
-      destroyCallback: (options) => {
-        console.log("destroyCallback", options);
-        // 销毁 Vue 实例
-        app.unmount();
-      }
-    });
-    
-    app.provide('plugin', this);
-    app.provide('configFile', this.configFile)
-    app.mount(dialog.element.querySelector("#SettingPanel")!);
+      destroyCallback: () => app.unmount()
+    })
+
+    app.mount(dialog.element.querySelector("#SettingPanel")!)
   }
 
   onLayoutReady() {
-    // onEvent
     this.onEvent()
   }
 
   onunload() {
-    // offEvent
     this.offEvent()
   }
 
   private async onEvent() {
     this.eventBus.on("paste", this.picturePasteEventListener)
-    console.log("注册粘贴事件完成")
+    console.log("注册粘贴事件")
   }
 
   private offEvent() {
     this.eventBus.off("paste", () => {})
-    console.log("销毁粘贴事件完成")
+    console.log("销毁粘贴事件")
   }
 
-  protected readonly picturePasteEventListener = async (e: CustomEvent) => {    
-    const detail = e.detail
-    console.log("paste detail =>", detail)
-    const files = detail.files
+  private readonly picturePasteEventListener = async (e: CustomEvent) => {
 
-    console.log(this.config)
-
-    // 获取笔记本 id
-    const notebookId = detail?.protyle?.notebookId
-    console.log("notebookId: " +  notebookId)
-    if (!notebookId) {
-      console.log("无法获取笔记本 ID")
-      return
-    }
-    if(notebookId != this.config.notebookId){
-      console.log("当前笔记本无图床策略")
-      return
-    }
-
-    // 校验文件
+    console.log("detail: ", e.detail)
+    // 阻止默认事件
+    e.preventDefault()
+    
+    const files = resolveFiles(e.detail.files)
     if (!files || files.length == 0) {
       console.log("粘贴板无图片，跳过")
-      return
-    }
-
-    // 阻止思源默认上传
-    e.preventDefault()
-    e.stopPropagation()
-    if (files.length > 1) {
-      console.log('仅支持一次性上传单张图片')
-      return
-    }
-    const file = files[0]
-
-    // 获取鼠标所在块id
-    const nodeId = getCaretNodeId()
-
-    try {
-      showMessage("正在上传图片，请勿进行刷新!")
-
-      const uploader = new LskyUploader({
-        baseUrl: this.config.baseUrl,
-        email: this.config.email,
-        password: this.config.password
+      e.detail.resolve({
+        textPlain: e.detail.textPlain,
       })
-
-      let uploadResult = null
-      try {
-        uploadResult = await uploader.upload(file)
-        console.log("图片上传成功：", uploadResult.url)
-        showMessage('图片上传成功')
-      }catch (err) {
-        console.error("上传图片失败", err)
-        throw err;
-      }
-    
-      try{
-        await this.afterUpload(nodeId, uploadResult.url)
-        showMessage('图片链接插入成功')
-      }catch (err) {
-        console.error("上传成功，但写入块失败", err)
-        throw err;
-      }
-      
-
-
-    } catch (e) {
-      console.log(e.toString())
+      return
     }
+    const notebookId = e.detail?.protyle?.notebookId
+    if (!notebookId){
+      showMessage("笔记本不存在", 3000, "error")
+      return
+    }
+
+    // 获取配置
+    const appConfig = await loadConfig()
+    const imgBedList = appConfig.imgBedList
+    const bedConfig = imgBedList.find(bed => bed.notebookIds.includes(notebookId))
+    const file = files[0]
+    const nodeId = getCaretNodeId()
+    if (!bedConfig) {
+      showMessage("当前笔记本无图床策略")
+      e.detail.resolve({
+        files
+      })
+      return
+    }
+
+    // 开始上传到图床
+    if (files.length > 1) {
+      showMessage("仅支持上传单张图片")
+      return
+    }
+    showMessage("正在上传图片，请勿刷新", 2000, "info")
+  
+    try {
+      // 判断是否压缩
+
+      // 上传
+      showMessage("正在上传图片", 30000, "info", nodeId)
+      const url = await upload(bedConfig, file)
+      if(url === undefined) {
+        showMessage("上传失败", 3000, "error", nodeId)
+        return
+      }
+      console.log("url: ", url)
+
+      // 上传后
+      await this.afterUpload(e, url)
+      showMessage("上传成功", 3000, "info", nodeId)
+    } catch (err) {
+      console.error(err)
+      showMessage("上传失败", 5000, "error", nodeId)
+    }
+    return
   }
 
-  private readonly afterUpload = async (nodeId: string, url: string): Promise<IResponse>  => {
-
-    console.log(nodeId + " " + url )
-    // 插入以后需要做的事
-    try {
-      return await Client.insertBlock({ data: url, dataType: "markdown", parentID: nodeId })
-    } catch (err) {
-      console.error("上传失败", err)
-      throw err
-    }
+  private readonly afterUpload = async (e: CustomEvent, url: string) => {
+    e.detail.resolve({
+      textPlain: url,
+      files: []
+    })
   }
 }

@@ -18,8 +18,9 @@
     },
     "resolveJsonModule": true,
     "types": [
-      "node",
-      "vite/client"
+      // "node",
+      // "vite/client",
+      // "ant-design-vue"
     ],
     "allowImportingTsExtensions": true,
     "allowJs": true,

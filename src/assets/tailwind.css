@@ -1,0 +1,85 @@
+/* 局部重置，只作用在 #SettingPanel */
+#SettingPanel {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #111827;
+}
+
+/* 重置常用标签的默认样式 */
+#SettingPanel h1, 
+#SettingPanel h2, 
+#SettingPanel h3, 
+#SettingPanel h4, 
+#SettingPanel h5, 
+#SettingPanel h6, 
+#SettingPanel p, 
+#SettingPanel ul, 
+#SettingPanel ol, 
+#SettingPanel li, 
+#SettingPanel dl, 
+#SettingPanel dt, 
+#SettingPanel dd {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+/* 列表 */
+#SettingPanel ul, 
+#SettingPanel ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  list-style-position: inside;
+}
+
+/* 标题 */
+#SettingPanel h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; }
+#SettingPanel h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+#SettingPanel h3 { font-size: 1.25rem; font-weight: 500; margin-bottom: 0.5rem; }
+
+/* 段落 */
+#SettingPanel p { margin-bottom: 1rem; }
+
+/* 表单元素 */
+#SettingPanel input,
+#SettingPanel select,
+#SettingPanel textarea,
+#SettingPanel button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* 按钮 */
+#SettingPanel button {
+  background-color: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+}
+
+#SettingPanel button:hover {
+  background-color: #2563eb;
+}
+
+/* 表单 focus 样式 */
+#SettingPanel input:focus,
+#SettingPanel select:focus,
+#SettingPanel textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* 图片 */
+#SettingPanel img {
+  max-width: 100%;
+  display: block;
+}
+
+
+@tailwind components;
+@tailwind utilities;
