@@ -5,7 +5,7 @@ import { getCaretNodeId } from "./utils"
 import "@/index.scss"
 import { registerPlugin, loadConfig } from "@/utils/configManager"
 import { upload } from "@/uploaders/Uploader"
-import { resolveFiles } from "@/utils/file"
+import { resolveFiles,isImageFile } from "@/utils/file"
 import { compressImage } from "@/utils/tinypng"
  
 export default class ImgUploadPlugin extends Plugin {
@@ -53,20 +53,21 @@ export default class ImgUploadPlugin extends Plugin {
     e.preventDefault()
     
     const files = resolveFiles(e.detail.files)
-    if (!files || files.length == 0) {
-      console.log("粘贴板无图片，跳过")
+    // 粘贴板无图片或包含非图片文件，后续操作交还给思源
+    if (!files || files.length === 0 || files.some(file => !isImageFile(file.name))) {
       e.detail.resolve({
         textPlain: e.detail.textPlain,
+        files,
       })
       return
     }
+
     const notebookId = e.detail?.protyle?.notebookId
     if (!notebookId){
       showMessage("笔记本不存在", 3000, "error")
       return
     }
 
-    // 获取配置
     const appConfig = await loadConfig()
     const imgBedList = appConfig.imgBedList
     const bedConfig =
@@ -74,10 +75,12 @@ export default class ImgUploadPlugin extends Plugin {
       imgBedList.find(bed => bed.defaultImgBed);
     let file = files[0]
     const nodeId = getCaretNodeId()
+    // 笔记本没有配置默认图床，也没有绑定默认图床，不进行上传
     if (!bedConfig) {
       showMessage("当前笔记本无图床策略")
       e.detail.resolve({
-        files
+        textPlain: e.detail.textPlain,
+        files,
       })
       return
     }
@@ -92,7 +95,7 @@ export default class ImgUploadPlugin extends Plugin {
     try {
       // 判断是否压缩
       const compressConfig = appConfig.compressConfig
-      if(bedConfig.enableCompress || compressConfig.enable){
+      if(bedConfig.enableCompress || compressConfig?.enable){
         // 压缩
         showMessage("正在压缩图片", 30000, "info", nodeId)
         file = await compressImage(file, compressConfig.apiUrl, compressConfig.apiKey)
@@ -118,6 +121,7 @@ export default class ImgUploadPlugin extends Plugin {
   }
 
   private readonly afterUpload = async (e: CustomEvent, url: string) => {
+    // 重置files，防止思源继续上传
     e.detail.resolve({
       textPlain: url,
       files: []

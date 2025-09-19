@@ -24,3 +24,10 @@ export function resolveFiles(input: FileList | DataTransferItemList | File[] | u
 
   return files;
 }
+
+
+export function isImageFile(filename: string): boolean {
+  const imageExts = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"];
+  const name = filename.toLowerCase();
+  return imageExts.some(ext => name.endsWith(ext));
+}
