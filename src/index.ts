@@ -1,7 +1,7 @@
 import { Plugin, showMessage, Dialog } from "siyuan"
 import { createApp } from "vue"
 import App from "./App.vue"
-import { getCaretNodeId } from "./utils"
+import { getCaretNodeId } from "./utils/domUtils"
 import "@/index.scss"
 import { registerPlugin, loadConfig } from "@/utils/configManager"
 import { upload } from "@/uploaders/Uploader"
@@ -51,7 +51,16 @@ export default class ImgUploadPlugin extends Plugin {
     console.log("detail: ", e.detail)
     // 阻止默认事件
     e.preventDefault()
-    
+    const nodeId = getCaretNodeId()
+    try {
+      await this.upload(e, nodeId)
+    }catch(err){
+      showMessage(err.message, 5000, "error")
+    }
+  }
+
+  private readonly upload = async (e: CustomEvent, nodeId: string) => {
+
     const files = resolveFiles(e.detail.files)
     // 粘贴板无图片或包含非图片文件，后续操作交还给思源
     if (!files || files.length === 0 || files.some(file => !isImageFile(file.name))) {
@@ -64,8 +73,7 @@ export default class ImgUploadPlugin extends Plugin {
 
     const notebookId = e.detail?.protyle?.notebookId
     if (!notebookId){
-      showMessage("笔记本不存在", 3000, "error")
-      return
+      throw new Error("笔记本不存在")
     }
 
     const appConfig = await loadConfig()
@@ -74,10 +82,9 @@ export default class ImgUploadPlugin extends Plugin {
       imgBedList.find(bed => bed.notebookIds?.includes(notebookId)) ||
       imgBedList.find(bed => bed.defaultImgBed);
     let file = files[0]
-    const nodeId = getCaretNodeId()
     // 笔记本没有配置默认图床，也没有绑定默认图床，不进行上传
     if (!bedConfig) {
-      showMessage("当前笔记本无图床策略")
+      showMessage("当前笔记本无图床策略", 3000, "info", nodeId)
       e.detail.resolve({
         textPlain: e.detail.textPlain,
         files,
@@ -85,46 +92,56 @@ export default class ImgUploadPlugin extends Plugin {
       return
     }
 
-    // 开始上传到图床
-    if (files.length > 1) {
-      showMessage("仅支持上传单张图片")
-      return
-    }
-    showMessage("正在上传图片，请勿刷新", 2000, "info")
+    showMessage("正在上传图片，请勿刷新", 3000, "info", nodeId)
   
-    try {
-      // 判断是否压缩
-      const compressConfig = appConfig.compressConfig
-      if(bedConfig.enableCompress || compressConfig?.enable){
+    const total = files.length
+    let successCount = 0
+    const urls: string[] = []
+    
+    for (let i = 0; i < total; i++) {
+      let file = files[i]
+    
+      try {
         // 压缩
-        showMessage("正在压缩图片", 30000, "info", nodeId)
-        file = await compressImage(file, compressConfig.apiUrl, compressConfig.apiKey)
-      }
-
-      // 上传
-      showMessage("正在上传图片", 30000, "info", nodeId)
-      const url = await upload(bedConfig, file)
-      if(url === undefined) {
-        showMessage("上传失败", 3000, "error", nodeId)
+        const compressConfig = appConfig.compressConfig
+        if (bedConfig.enableCompress || compressConfig?.enable) {
+          showMessage(`(${i + 1}/${total}) 图片正在压缩 ${file.name}`, 30000, "info", nodeId)
+          file = await compressImage(file, compressConfig?.apiUrl, compressConfig?.apiKey)
+        }
+      }catch (err) {
+        showMessage(`(${i + 1}/${total}) 图片压缩异常: ${file.name}, ${err.message}`, 5000, "error", nodeId)
         return
       }
-      console.log("url: ", url)
 
-      // 上传后
-      await this.afterUpload(e, url)
-      showMessage("上传成功", 3000, "info", nodeId)
-    } catch (err) {
-      console.error(err)
-      showMessage("上传失败", 5000, "error", nodeId)
+      try{
+        // 上传
+        showMessage(`(${i + 1}/${total}) 正在上传 ${file.name}`, 30000, "info", nodeId)
+        const url = await upload(bedConfig, file)
+    
+        urls.push(url)
+        successCount++
+        showMessage(`(${i + 1}/${total}) 图片上传成功: ${file.name}`, 3000, "info", nodeId)
+      } catch (err) {
+        throw new Error(`(${i + 1}/${total}) 图片上传异常: ${file.name}, ${err.message}`)
+        return
+      }
     }
-    return
+    
+    // 统一处理
+    if (urls.length > 0) {
+      await this.afterUpload(e, urls)
+      showMessage(`图片上传成功 (${successCount}/${total}) 张`, 3000, "info", nodeId)
+    }
   }
 
-  private readonly afterUpload = async (e: CustomEvent, url: string) => {
-    // 重置files，防止思源继续上传
+  private readonly afterUpload = async (e: CustomEvent, urls: string[]) => {
+    // 拼接成 Markdown，每个 url 换行
+    const markdown = urls.map(url => `![](${url})`).join("  \n")
+  
     e.detail.resolve({
-      textPlain: url,
+      textPlain: markdown,
       files: []
     })
   }
+  
 }

@@ -1,4 +1,4 @@
-import Client from "@/utils/sdk"
+import Client from "@/utils/sySdk"
 import { api } from "@siyuan-community/siyuan-sdk/dist/src/types/kernel"
 
 
@@ -9,6 +9,12 @@ import { api } from "@siyuan-community/siyuan-sdk/dist/src/types/kernel"
  * @returns 压缩后的 File 实例
  */
 export async function compressImage(file: File, apiUrl: string, apiKey: string): Promise<File> {
+
+  // 配置校验
+  if (!apiUrl || !apiKey) {
+    throw new Error("请完善压缩配置")
+  }
+
   // 先读成 ArrayBuffer
   const reader = new FileReader()
 

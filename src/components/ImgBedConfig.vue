@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
 import { ImgBedConfig, LskyConfig, OtherConfig } from "@/interface/config"
-import Client from "@/utils/sdk"
-import { generateId } from "@/utils"
+import Client from "@/utils/sySdk"
+import { generateId } from "@/utils/common"
 import { loadConfig, saveConfigField } from "@/utils/configManager"
 import { ImgBedType } from "@/constants/imgBedType"
 import MultiSelect from "@/components/MultiSelect.vue"

@@ -31,7 +31,7 @@ export default class EasyImgUploader {
 
       if (data.code === 200 && data.result === "success" && data.url) {
         // 直接返回 Markdown 格式
-        return { success: true, url: `![](${data.url})` }
+        return { success: true, url: data.url }
       } else {
         return { success: false, error: data.message || "上传失败" }
       }

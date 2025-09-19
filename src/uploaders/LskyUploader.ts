@@ -71,7 +71,7 @@ export default class LskyUploader {
 
       const data = await res.json()
       if (data.status === true && data.data?.links) {
-        return { success: true, url: data.data.links.markdown }
+        return { success: true, url: data.data.links.url }
       } else {
         return { success: false, error: data.msg || "上传失败" }
       }
