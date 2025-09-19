@@ -1,7 +1,7 @@
 {
-  "name": "siyuan-plugin-img-upload",
+  "name": "pic-bed-manager",
   "author": "hausen1012",
-  "url": "https://github.com/hausen1012/siyuan-plugin-img-upload",
+  "url": "https://github.com/hausen1012/siyuan-plugin-pic-bed-manager",
   "version": "0.0.1",
   "minAppVersion": "2.10.14",
   "backends": [
@@ -11,14 +11,14 @@
     "all"
   ],
   "displayName": {
-    "default": "siyuan-plugin-img-upload",
-    "en_US": "siyuan-plugin-img-upload",
-    "zh_CN": "siyuan-plugin-img-upload"
+    "default": "图床管家",
+    "en_US": "Pic Bed Manager",
+    "zh_CN": "图床管家"
   },
   "description": {
-    "default": "siyuan-plugin-img-upload",
-    "en_US": "siyuan-plugin-img-upload",
-    "zh_CN": "siyuan-plugin-img-upload"
+    "default": "管理思源笔记中的图床配置，支持粘贴上传图片与管理多个平台的图床",
+    "en_US": "Manage pic bed configurations in SiYuan Note, supporting paste-to-upload images and multiple pic bed platforms",
+    "zh_CN": "管理思源笔记中的图床配置，支持粘贴上传图片与管理多个平台的图床"
   },
   "readme": {
     "default": "README.md",
