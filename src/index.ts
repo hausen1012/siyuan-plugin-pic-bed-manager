@@ -3,17 +3,18 @@ import { createApp } from "vue"
 import App from "./App.vue"
 import { getCaretNodeId } from "./utils/domUtils"
 import "@/index.scss"
-import { registerPlugin, loadConfig } from "@/utils/configManager"
 import { upload } from "@/uploaders/Uploader"
 import { resolveFiles,isImageFile } from "@/utils/file"
 import { compressImage } from "@/utils/tinypng"
+import { useConfigStore } from "@/store/configStore"
  
 export default class ImgUploadPlugin extends Plugin {
 
   async onload() {
-    registerPlugin(this)
-    await loadConfig()
-    //showMessage("图床配置加载成功", 3000, "info")
+    // 插件启动时加载数据
+    const configStore = useConfigStore()
+    configStore.init(this)
+    await configStore.loadConfig()
   }
 
   openSetting() {
@@ -51,15 +52,14 @@ export default class ImgUploadPlugin extends Plugin {
     console.log("detail: ", e.detail)
     // 阻止默认事件
     e.preventDefault()
-    const nodeId = getCaretNodeId()
     try {
-      await this.upload(e, nodeId)
+      await this.upload(e)
     }catch(err){
       showMessage(err.message, 5000, "error")
     }
   }
 
-  private readonly upload = async (e: CustomEvent, nodeId: string) => {
+  private readonly upload = async (e: CustomEvent) => {
 
     const files = resolveFiles(e.detail.files)
     // 粘贴板无图片或包含非图片文件，后续操作交还给思源
@@ -81,10 +81,9 @@ export default class ImgUploadPlugin extends Plugin {
     const bedConfig =
       imgBedList.find(bed => bed.notebookIds?.includes(notebookId)) ||
       imgBedList.find(bed => bed.defaultImgBed);
-    let file = files[0]
     // 笔记本没有配置默认图床，也没有绑定默认图床，不进行上传
     if (!bedConfig) {
-      showMessage("当前笔记本无图床策略", 3000, "info", nodeId)
+      showMessage("当前笔记本无图床策略", 3000, "info")
       e.detail.resolve({
         textPlain: e.detail.textPlain,
         files,
@@ -92,12 +91,12 @@ export default class ImgUploadPlugin extends Plugin {
       return
     }
 
+    const nodeId = getCaretNodeId()
     showMessage("正在上传图片，请勿刷新", 3000, "info", nodeId)
   
     const total = files.length
     let successCount = 0
     const urls: string[] = []
-    
     for (let i = 0; i < total; i++) {
       let file = files[i]
     

@@ -1,4 +1,4 @@
-import Client from "@/utils/sySdk"
+import Client from "@/utils/siyuanSdk"
 import { api } from "@siyuan-community/siyuan-sdk/dist/src/types/kernel"
 
 

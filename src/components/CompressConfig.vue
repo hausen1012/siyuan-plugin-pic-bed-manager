@@ -37,8 +37,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
-import { loadConfig, saveConfigField } from "@/utils/configManager"
 import { CompressConfig } from "@/interface/config"
+import { useConfigStore } from "@/store/configStore"
+
+const configStore = useConfigStore()
 
 // 定义表单字段
 const form = ref<CompressConfig>({
@@ -50,7 +52,7 @@ const saved = ref(false)
 
 async function saveConfig() {
   try {
-    await saveConfigField({ compressConfig: form.value })
+    await configStore.saveField({ compressConfig: form.value })
     saved.value = true
    setTimeout(() => (saved.value = false), 3000)
   } catch (e) {
@@ -60,7 +62,7 @@ async function saveConfig() {
 
 onMounted(async () => {
   try {
-    const appConfig = await loadConfig()
+    const appConfig = await configStore.loadConfig()
     if (appConfig?.compressConfig) {
       form.value = appConfig.compressConfig
     }

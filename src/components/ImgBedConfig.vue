@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
 import { ImgBedConfig, LskyConfig, OtherConfig } from "@/interface/config"
-import Client from "@/utils/sySdk"
+import Client from "@/utils/siyuanSdk"
 import { generateId } from "@/utils/common"
-import { loadConfig, saveConfigField } from "@/utils/configManager"
 import { ImgBedType } from "@/constants/imgBedType"
 import MultiSelect from "@/components/MultiSelect.vue"
+import { useConfigStore } from "@/store/configStore"
+
+const configStore = useConfigStore()
 
 const mode = ref<"list" | "add" | "edit">("list")
 const form = ref<Array<ImgBedConfig>>([])
@@ -18,7 +20,7 @@ const notebookList = ref<{ label: string; value: string }[]>([])
 
 async function persistConfig() {
   try {
-    await saveConfigField({ imgBedList: form.value })
+    await configStore.saveField({ imgBedList: form.value })
     saved.value = true
     setTimeout(() => (saved.value = false), 2000)
   } catch (e) {
@@ -115,7 +117,7 @@ async function removeImgBed(id: string) {
 
 onMounted(async () => {
   try {
-    const appConfig = await loadConfig()
+    const appConfig = await configStore.loadConfig()
     form.value = Array.isArray(appConfig?.imgBedList) ? appConfig.imgBedList : []
     const response = await Client.lsNotebooks()
     notebookList.value = response.data.notebooks.map(nb => ({
