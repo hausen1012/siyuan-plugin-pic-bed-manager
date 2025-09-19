@@ -10,11 +10,13 @@ import { useConfigStore } from "@/store/configStore"
  
 export default class ImgUploadPlugin extends Plugin {
 
+  private configStore = useConfigStore()  // 存成成员
+
   async onload() {
     // 插件启动时加载数据
-    const configStore = useConfigStore()
-    configStore.init(this)
-    await configStore.loadConfig()
+    this.configStore.init(this)
+    console.log(this.configStore)
+    await this.configStore.loadConfig()
   }
 
   openSetting() {
@@ -76,7 +78,7 @@ export default class ImgUploadPlugin extends Plugin {
       throw new Error("笔记本不存在")
     }
 
-    const appConfig = await loadConfig()
+    const appConfig = await this.configStore.loadConfig()
     const imgBedList = appConfig.imgBedList
     const bedConfig =
       imgBedList.find(bed => bed.notebookIds?.includes(notebookId)) ||
