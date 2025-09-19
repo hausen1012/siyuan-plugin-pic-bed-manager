@@ -1,42 +1,39 @@
+import { EasyImgrOptions, UploadResult } from "@/interface/uploader"
 
-import { OtherOptions, UploadResult } from "@/interface/imgBed"
-
-export default class OtherUploader {
+export default class EasyImgUploader {
   private baseUrl: string
   private token: string
-  private uploadPath: string
+  private readonly uploadPath: string = "/api/index.php"
 
-  constructor(options: OtherOptions) {
+  constructor(options: EasyImgrOptions) {
     if (!options.baseUrl || !options.token) {
       throw new Error("baseUrl and token are required")
     }
     this.baseUrl = options.baseUrl
     this.token = options.token
-    this.uploadPath = options.uploadPath ?? "/api/v1/upload"
   }
 
   /**
-   * 上传单张图片
+   * 上传单张图片，返回 Markdown 格式链接
    */
   public async upload(file: File | Blob): Promise<UploadResult> {
     try {
       const formData = new FormData()
-      formData.append("file", file)
+      formData.append("token", this.token)
+      formData.append("image", file)
 
       const res = await fetch(`${this.baseUrl}${this.uploadPath}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        },
         body: formData
       })
 
       const data = await res.json()
 
-      if (data.status === true && data.data?.links) {
-        return { success: true, url: data.data.links.markdown }
+      if (data.code === 200 && data.result === "success" && data.url) {
+        // 直接返回 Markdown 格式
+        return { success: true, url: `![](${data.url})` }
       } else {
-        return { success: false, error: data.msg || "上传失败" }
+        return { success: false, error: data.message || "上传失败" }
       }
     } catch (err: any) {
       return { success: false, error: err.message || "网络错误" }

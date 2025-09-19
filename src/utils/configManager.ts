@@ -1,7 +1,7 @@
 // src/utils/configManager.ts
 import type { Plugin } from "siyuan"
 import type { AppConfig } from "@/interface/config"
-import { CONFIG_FILE } from "@/constants/app"
+import { CONFIG_FILE } from "@/constants/plugin"
 
 // 内存缓存
 let cachedConfig: AppConfig | null = null

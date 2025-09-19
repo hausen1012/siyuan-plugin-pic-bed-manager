@@ -1,4 +1,5 @@
 import Client from "@/utils/sdk"
+import { api } from "@siyuan-community/siyuan-sdk/dist/src/types/kernel"
 
 
 /**
@@ -7,7 +8,7 @@ import Client from "@/utils/sdk"
  * @param apiKey 你的 TinyPNG API Key
  * @returns 压缩后的 File 实例
  */
-export async function compressImage(file: File, apiKey: string): Promise<File> {
+export async function compressImage(file: File, apiUrl: string, apiKey: string): Promise<File> {
   // 先读成 ArrayBuffer
   const reader = new FileReader()
 
@@ -20,7 +21,7 @@ export async function compressImage(file: File, apiKey: string): Promise<File> {
         // Step 1: 上传到 TinyPNG
         // =========================
         const shrinkResp = await Client.forwardProxy({
-          url: "https://api.tinify.com/shrink",
+          url: apiUrl,
           method: "POST",
           headers: [
             { Authorization: "Basic " + btoa("api:" + apiKey) },

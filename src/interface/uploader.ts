@@ -8,7 +8,7 @@ export interface LskyOptions {
 }
 
 // 其他图床选项
-export interface OtherOptions {
+export interface EasyImgrOptions {
   baseUrl: string       // 图床基础 URL
   token: string         // API token
 }

@@ -3,12 +3,13 @@ import { loadConfig, saveConfigField } from "@/utils/configManager"
 import type { ImgBedConfig } from "@/interface/config"
 import type { UploadResult } from "@/interface/uploader"
 import LskyUploader from "@/uploaders/LskyUploader"
-import OtherUploader from "@/uploaders/OtherUploader"
+import OtherUploader from "@/uploaders/EasyImgUploader"
+import {ImgBedType } from "@/constants/imgBedType"
 
 export async function upload(bedConfig: ImgBedConfig, file: File): Promise<string> {
   let uploader: LskyUploader | OtherUploader;
 
-  if (bedConfig.type === "lsky") {
+  if (bedConfig.type === ImgBedType.Lsky) {
     uploader = new LskyUploader({
       baseUrl: bedConfig.baseUrl,
       email: bedConfig.email,
@@ -27,7 +28,7 @@ export async function upload(bedConfig: ImgBedConfig, file: File): Promise<strin
       );
       await saveConfigField({ imgBedList: imgBeds });
     }
-  } else if (bedConfig.type === "other1") {
+  } else if (bedConfig.type === ImgBedType.EasyImg) {
     uploader = new OtherUploader({
       baseUrl: bedConfig.baseUrl,
       token: bedConfig.token

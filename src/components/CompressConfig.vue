@@ -1,88 +1,220 @@
 <template>
-  <div>
-    <h2 class="text-lg font-medium mb-4">压缩配置</h2>
+  <div class="container">
+    <header class="header">
+      <h2>压缩配置</h2>
+    </header>
 
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-600 mb-1">API 地址</label>
-        <input v-model="form.apiUrl" type="text" placeholder="https://example.com/api" class="input" />
-      </div>
+    <form @submit.prevent="saveConfig" class="form">
+      <!-- API 地址 -->
+      <label class="form-row">
+        <span>API 地址：</span>
+        <input type="text" v-model="form.apiUrl" placeholder="https://api.tinify.com/shrink" />
+      </label>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-600 mb-1">Token</label>
-        <input v-model="form.token" type="text" placeholder="输入 Token" class="input" />
-      </div>
+      <!-- Api Key -->
+      <label class="form-row">
+        <span>Api Key：</span>
+        <input type="text" v-model="form.apiKey" placeholder="获取地址：https://tinify.cn/dashboard/api" />
+      </label>
 
-      <div class="flex items-center gap-2">
-        <input id="enable" type="checkbox" v-model="form.enabled" class="w-4 h-4" />
-        <label for="enable" class="text-sm text-gray-700">启用压缩功能</label>
-      </div>
+      <!-- 启用 -->
+      <label class="form-row switch-label">
+        <span>全局启用：</span>
+        <input type="checkbox" v-model="form.enable" />
+        <span class="switch-slider"></span>
+      </label>
 
-      <button @click="saveConfig" class="w-full bg-green-600 text-white rounded-xl py-2 hover:bg-green-700 transition">
-        保存配置
-      </button>
-    </div>
+      <!-- 保存按钮 -->
+      <button type="submit" class="btn primary">保存配置</button>
+    </form>
 
-    <div v-if="saved" class="mt-4 text-green-600 text-center text-sm font-medium">
+    <!-- 保存成功提示 -->
+    <div v-if="saved" class="alert success">
       ✅ 配置已保存！
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted } from "vue"
-import { Plugin } from "siyuan"
+import { ref, onMounted } from "vue"
+import { loadConfig, saveConfigField } from "@/utils/configManager"
+import { CompressConfig } from "@/interface/config"
 
-interface CompressConfig {
-  apiUrl: string
-  token: string
-  enabled: boolean
-}
-
-const plugin = inject<Plugin>("plugin")
-const configFile = inject<string>("configFile")
-
+// 定义表单字段
 const form = ref<CompressConfig>({
   apiUrl: "",
-  token: "",
-  enabled: false
+  apiKey: "",
+  enable: false
 })
 const saved = ref(false)
 
 async function saveConfig() {
   try {
-    const allConfig = await plugin.loadData(configFile) || {}
-    allConfig.compress = form.value
-    await plugin.saveData(configFile, allConfig)
+    await saveConfigField({ compressConfig: form.value })
     saved.value = true
-    setTimeout(() => (saved.value = false), 3000)
+   setTimeout(() => (saved.value = false), 3000)
   } catch (e) {
-    console.error("保存失败", e)
+    console.error("保存压缩配置失败", e)
   }
 }
 
 onMounted(async () => {
   try {
-    const data = await plugin.loadData(configFile)
-    if (data?.compress) {
-      form.value = data.compress
+    const appConfig = await loadConfig()
+    if (appConfig?.compressConfig) {
+      form.value = appConfig.compressConfig
     }
   } catch {
-    console.log("没有已有压缩配置，使用默认值")
+    console.log("加载配置失败")
   }
 })
 </script>
 
 <style scoped>
-.input {
-  width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
+.container {
+  height: 100%;
+  margin: 0 auto;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #333;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 表单卡片 */
+.form {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 24px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 水平排列的表单行 */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #555;
+}
+
+.form-row span {
+  min-width: 80px; /* 标签宽度，可根据需要调整 */
+}
+
+/* 输入框 */
+input[type="text"] {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 4px rgba(24,144,255,0.3);
   outline: none;
 }
-.input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+
+/* 开关样式 */
+.switch-label {
+  gap: 8px;
+}
+
+.switch-label input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  -webkit-appearance: none;
+  background: #ccc;
+  outline: none;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.switch-label input[type="checkbox"]:checked {
+  background: #1890ff;
+}
+
+.switch-label input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.switch-label input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 7px 14px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #f0f0f0;
+}
+
+.btn.primary {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.btn.primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* 保存成功提示 */
+.alert.success {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #389e0d;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* 响应式优化 */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-row span {
+    min-width: auto;
+    margin-bottom: 4px;
+  }
 }
 </style>

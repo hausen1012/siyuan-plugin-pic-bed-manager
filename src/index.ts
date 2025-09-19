@@ -2,11 +2,11 @@ import { Plugin, showMessage, Dialog } from "siyuan"
 import { createApp } from "vue"
 import App from "./App.vue"
 import { getCaretNodeId } from "./utils"
-import "@/assets/tailwind.css"
 import "@/index.scss"
 import { registerPlugin, loadConfig } from "@/utils/configManager"
 import { upload } from "@/uploaders/Uploader"
 import { resolveFiles } from "@/utils/file"
+import { compressImage } from "@/utils/tinypng"
  
 export default class ImgUploadPlugin extends Plugin {
 
@@ -69,8 +69,10 @@ export default class ImgUploadPlugin extends Plugin {
     // 获取配置
     const appConfig = await loadConfig()
     const imgBedList = appConfig.imgBedList
-    const bedConfig = imgBedList.find(bed => bed.notebookIds.includes(notebookId))
-    const file = files[0]
+    const bedConfig =
+      imgBedList.find(bed => bed.notebookIds?.includes(notebookId)) ||
+      imgBedList.find(bed => bed.defaultImgBed);
+    let file = files[0]
     const nodeId = getCaretNodeId()
     if (!bedConfig) {
       showMessage("当前笔记本无图床策略")
@@ -89,6 +91,12 @@ export default class ImgUploadPlugin extends Plugin {
   
     try {
       // 判断是否压缩
+      const compressConfig = appConfig.compressConfig
+      if(bedConfig.enableCompress || compressConfig.enable){
+        // 压缩
+        showMessage("正在压缩图片", 30000, "info", nodeId)
+        file = await compressImage(file, compressConfig.apiUrl, compressConfig.apiKey)
+      }
 
       // 上传
       showMessage("正在上传图片", 30000, "info", nodeId)

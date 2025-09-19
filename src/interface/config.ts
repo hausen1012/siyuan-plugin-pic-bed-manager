@@ -5,6 +5,8 @@ export interface BaseImgBedConfig {
   name: string
   type: ImgBedType
   notebookIds: string[]
+  enableCompress: boolean
+  defaultImgBed: boolean
 }
 
 export interface LskyConfig extends BaseImgBedConfig {
@@ -17,7 +19,7 @@ export interface LskyConfig extends BaseImgBedConfig {
 }
 
 export interface OtherConfig extends BaseImgBedConfig {
-  type: ImgBedType.Other
+  type: ImgBedType.EasyImg
   baseUrl: string
   token: string
 }
@@ -25,8 +27,8 @@ export interface OtherConfig extends BaseImgBedConfig {
 export type ImgBedConfig = LskyConfig | OtherConfig
 
 export interface CompressConfig {
-  url: string,
-  key: string,
+  apiUrl: string,
+  apiKey: string,
   enable: boolean
 }
 
