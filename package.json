@@ -1,6 +1,6 @@
 {
   "name": "siyuan-plugin-pic-bed-manager",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "在思源笔记中一键上传图片到图床",
   "author": "hausen1012",

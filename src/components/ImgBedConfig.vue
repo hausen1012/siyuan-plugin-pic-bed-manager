@@ -18,6 +18,8 @@ const newImgBedType = ref<ImgBedType>(ImgBedType.Lsky)
 const newImgBedConfig = ref<Partial<ImgBedConfig>>({ notebookIds: [] })
 const editingBedId = ref<string | null>(null)
 const notebookList = ref<Array<SelectItem>>([])
+const disabledNotebookIds = ref<string[]>([])
+
 
 async function persistConfig() {
   try {
@@ -33,6 +35,7 @@ function toAddMode() {
   newImgBedConfig.value = { notebookIds: [] }
   newImgBedType.value = ImgBedType.Lsky
   editingBedId.value = null
+  computeDisabledNotebooks()
   mode.value = Mode.ADD
 }
 
@@ -40,6 +43,7 @@ function toEditMode(bed: ImgBedConfig) {
   newImgBedConfig.value = { ...bed }
   newImgBedType.value = bed.type as ImgBedType
   editingBedId.value = bed.id
+  computeDisabledNotebooks(bed.id)
   mode.value = Mode.EDIT
 }
 
@@ -115,15 +119,44 @@ async function removeImgBed(id: string) {
   await persistConfig()
 }
 
+function getNotebookNames(ids) {
+  if (!ids || ids.length === 0) return '-'
+  return ids
+    .map(id => notebookList.value.find(nb => nb.value === id)?.name || '未知')
+    .join('，')
+}
+
+function computeDisabledNotebooks(currentBedId?: string) {
+  const ids: string[] = []
+
+  form.value.forEach(bed => {
+    // 如果是当前编辑的图床，则跳过它自己的 notebook
+    if (currentBedId && bed.id === currentBedId) return
+    ids.push(...bed.notebookIds)
+  })
+
+  disabledNotebookIds.value = ids
+}
+
+// 加载：1. 笔记本列表 2. 插件配置
 onMounted(async () => {
   try {
-    const appConfig = await configStore.loadConfig()
-    form.value = Array.isArray(appConfig?.imgBedList) ? appConfig.imgBedList : []
     const response = await Client.lsNotebooks()
     notebookList.value = response.data.notebooks.map(nb => ({
       name: nb.name,
       value: nb.id,
     }))
+
+    const existingNotebookIds = new Set(notebookList.value.map(nb => nb.value))
+    const appConfig = await configStore.loadConfig()
+    form.value = Array.isArray(appConfig?.imgBedList)
+      ? appConfig.imgBedList.map(imgBed => ({
+          ...imgBed,
+          notebookIds: Array.isArray(imgBed.notebookIds)
+            ? imgBed.notebookIds.filter(id => existingNotebookIds.has(id))
+            : [],
+        }))
+      : []
   } catch {
     console.log("没有已有配置，使用默认值")
   }
@@ -142,8 +175,15 @@ onMounted(async () => {
       <ul class="list">
         <li v-for="item in form" :key="item.id" class="list-item">
           <div>
-            <strong>名称:</strong> {{ item.name }}<br/>
-            <strong>地址:</strong> {{ item.baseUrl }}
+            <strong>名称: </strong>{{ item.name }}<br/>
+            <strong>地址: </strong>{{ item.baseUrl }}<br/>
+            <strong>笔记本: </strong>
+            <span 
+              class="notebook-preview" 
+              :title="getNotebookNames(item.notebookIds)"
+            >
+              {{ getNotebookNames(item.notebookIds) }}
+            </span>
           </div>
           <div class="actions">
             <button class="btn" @click="toEditMode(item)">编辑</button>
@@ -172,6 +212,7 @@ onMounted(async () => {
             <MultiSelect
               v-model="newImgBedConfig.notebookIds"
               :options="notebookList"
+              :disabledList="disabledNotebookIds"
               placeholder="请绑定笔记本"
             />
           </label>
@@ -310,6 +351,16 @@ onMounted(async () => {
   border-left: 3px solid #1677ff;
   padding-left: 8px;
   color: #222;
+}
+
+.notebook-preview {
+  display: inline-block;
+  max-width: 350px; /* 根据你需要调整宽度 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  cursor: help; /* 鼠标悬浮显示 title */
 }
 
 .form label {

@@ -24,7 +24,10 @@
           v-for="option in options"
           :key="option.value"
           class="multi-select-option"
-          :class="{ 'is-selected': isOptionSelected(option.value) }"
+          :class="{ 
+            'is-selected': isOptionSelected(option.value),
+            'is-disabled': isOptionDisabled(option.value)
+          }"
           @click="handleOptionClick(option)"
         >
           {{ option.name }}
@@ -41,11 +44,11 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { SelectItem } from '@/types/components'
 
-// props 类型注解
 const props = defineProps<{
   modelValue: string[]
   options: SelectItem[]
   placeholder?: string
+  disabledList?: string[]
 }>()
 
 const emit = defineEmits<{
@@ -56,16 +59,16 @@ const isOpen = ref(false)
 const isFocused = ref(false)
 const containerRef = ref<HTMLElement | null>(null)
 
-// 根据 modelValue 获取选中的项
 const selectedOptions = computed(() =>
   props.options.filter(option => props.modelValue.includes(option.value))
 )
 
-// 检查某个选项是否已选中
 const isOptionSelected = (value: string) => props.modelValue.includes(value)
+const isOptionDisabled = (value: string) => props.disabledList?.includes(value) ?? false
 
-// 点击选项处理
 const handleOptionClick = (option: SelectItem) => {
+  if (isOptionDisabled(option.value)) return
+
   const selectedValues = [...props.modelValue]
   const index = selectedValues.indexOf(option.value)
   if (index > -1) {
@@ -76,19 +79,16 @@ const handleOptionClick = (option: SelectItem) => {
   emit('update:modelValue', selectedValues)
 }
 
-// 移除标签
 const handleRemoveTag = (value: string) => {
   const selectedValues = props.modelValue.filter(v => v !== value)
   emit('update:modelValue', selectedValues)
 }
 
-// 切换下拉显示
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value
   isFocused.value = isOpen.value
 }
 
-// 点击组件外部关闭下拉
 const handleClickOutside = (event: MouseEvent) => {
   if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
     isOpen.value = false
@@ -99,7 +99,6 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
-// 当 modelValue 清空时取消聚焦
 watch(
   () => props.modelValue,
   newVal => {
@@ -209,6 +208,13 @@ watch(
   color: #409eff;
   background-color: #f5f7fa;
   font-weight: 500;
+}
+
+.multi-select-option.is-disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #f5f5f5;
 }
 
 .multi-select-empty {
