@@ -1,12 +1,12 @@
 {
-  "name": "siyuan-plugin-img-upload",
-  "version": "0.0.1",
+  "name": "siyuan-plugin-pic-bed-manager",
+  "version": "0.0.4",
   "type": "module",
   "description": "在思源笔记中一键上传图片到图床",
   "author": "hausen1012",
   "license": "MIT",
   "homepage": "",
-  "repository": "https://github.com/hausen1012/siyuan-plugin-img-upload",
+  "repository": "https://github.com/hausen1012/ssiyuan-plugin-pic-bed-manager",
   "scripts": {
     "dev": "vite build --watch",
     "release": "node ./release.js",
