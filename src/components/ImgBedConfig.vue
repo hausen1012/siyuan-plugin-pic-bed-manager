@@ -10,16 +10,13 @@ import { useConfigStore } from "@/store/configStore"
 import { Mode } from "@/constants/mode"
 
 const configStore = useConfigStore()
-
 const mode = ref<Mode>(Mode.LIST)
 const form = ref<Array<ImgBedConfig>>([])
 
-const newImgBedType = ref<ImgBedType>(ImgBedType.Lsky)
-const newImgBedConfig = ref<Partial<ImgBedConfig>>({ notebookIds: [] })
+const newImgBedConfig = ref<Partial<ImgBedConfig>>({ notebookIds: [], type: ImgBedType.Lsky })
 const editingBedId = ref<string | null>(null)
 const notebookList = ref<Array<SelectItem>>([])
 const disabledNotebookIds = ref<string[]>([])
-
 
 async function persistConfig() {
   try {
@@ -32,8 +29,7 @@ async function persistConfig() {
 }
 
 function toAddMode() {
-  newImgBedConfig.value = { notebookIds: [] }
-  newImgBedType.value = ImgBedType.Lsky
+  newImgBedConfig.value = { notebookIds: [], type: ImgBedType.Lsky }
   editingBedId.value = null
   computeDisabledNotebooks()
   mode.value = Mode.ADD
@@ -41,17 +37,55 @@ function toAddMode() {
 
 function toEditMode(bed: ImgBedConfig) {
   newImgBedConfig.value = { ...bed }
-  newImgBedType.value = bed.type as ImgBedType
   editingBedId.value = bed.id
   computeDisabledNotebooks(bed.id)
   mode.value = Mode.EDIT
 }
 
 function toListMode() {
-  newImgBedConfig.value = { notebookIds: [] }
-  newImgBedType.value = ImgBedType.Lsky
+  newImgBedConfig.value = { notebookIds: [], type: ImgBedType.Lsky }
   editingBedId.value = null
   mode.value = Mode.LIST
+}
+
+function pushBed(raw: Partial<ImgBedConfig>) {
+  if (!raw.type) {
+    window.$message.error("图床类型不能为空")
+    return
+  }
+
+  const common = {
+    id: raw.id!,
+    name: raw.name!,
+    notebookIds: raw.notebookIds!,
+    enableCompress: raw.enableCompress ?? false,
+    defaultImgBed: raw.defaultImgBed ?? false,
+    baseUrl: raw.baseUrl!,
+  }
+
+  let bed: ImgBedConfig
+
+  if (raw.type === ImgBedType.Lsky) {
+    bed = {
+      ...common,
+      type: ImgBedType.Lsky,
+      email: (raw as LskyConfig).email || "",
+      password: (raw as LskyConfig).password || "",
+      strategyId: (raw as LskyConfig).strategyId ?? 1,
+    }
+  } else if (raw.type === ImgBedType.EasyImg) {
+    bed = {
+      ...common,
+      type: ImgBedType.EasyImg,
+      token: (raw as OtherConfig).token || "",
+    }
+  } else {
+    window.$message.error(`不支持的图床类型: ${raw.type}`)
+    console.log(`不支持的图床类型: ${raw.type}`)
+    return
+  }
+
+  form.value.push(bed)
 }
 
 async function handleSaveBed() {
@@ -61,17 +95,14 @@ async function handleSaveBed() {
   }
 
   if (mode.value === Mode.ADD) {
-    const id = generateId()
-    pushBed({ ...newImgBedConfig.value, id })
+    pushBed({ ...newImgBedConfig.value, id: generateId() })
   } else if (mode.value === Mode.EDIT && editingBedId.value) {
     const index = form.value.findIndex(b => b.id === editingBedId.value)
     if (index !== -1) {
-      form.value[index] = {
-        ...form.value[index],
-        ...newImgBedConfig.value,
-        id: editingBedId.value,
-        token: "",
-      } as ImgBedConfig
+      // 删除旧对象
+      form.value.splice(index, 1)
+      // 使用 pushBed 重新生成对象
+      pushBed({ ...newImgBedConfig.value, id: editingBedId.value })
     }
   }
 
@@ -79,47 +110,12 @@ async function handleSaveBed() {
   toListMode()
 }
 
-function pushBed(raw: Partial<ImgBedConfig>) {
-  // 公共字段
-  const common = {
-    id: raw.id!,
-    name: raw.name!,
-    notebookIds: raw.notebookIds!,
-    enableCompress: raw.enableCompress,
-    defaultImgBed: raw.defaultImgBed,
-    baseUrl: raw.baseUrl!,
-  }
-
-  let bed: ImgBedConfig
-
-  if (newImgBedType.value === ImgBedType.Lsky) {
-    bed = {
-      ...common,
-      type: ImgBedType.Lsky,
-      email: (raw as LskyConfig).email!,
-      password: (raw as LskyConfig).password!,
-      strategyId: (raw as LskyConfig).strategyId ?? 1,
-    }
-  } else if (newImgBedType.value === ImgBedType.EasyImg) {
-    bed = {
-      ...common,
-      type: ImgBedType.EasyImg,
-      token: (raw as OtherConfig).token!,
-    }
-  } else {
-    window.$message.error(`不支持的图床类型: ${newImgBedType.value}`)
-    console.log(`不支持的图床类型: ${newImgBedType.value}`)
-  }
-
-  form.value.push(bed)
-}
-
 async function removeImgBed(id: string) {
   form.value = form.value.filter(bed => bed.id !== id)
   await persistConfig()
 }
 
-function getNotebookNames(ids) {
+function getNotebookNames(ids: string[] | undefined) {
   if (!ids || ids.length === 0) return '-'
   return ids
     .map(id => notebookList.value.find(nb => nb.value === id)?.name || '未知')
@@ -130,7 +126,6 @@ function computeDisabledNotebooks(currentBedId?: string) {
   const ids: string[] = []
 
   form.value.forEach(bed => {
-    // 如果是当前编辑的图床，则跳过它自己的 notebook
     if (currentBedId && bed.id === currentBedId) return
     ids.push(...bed.notebookIds)
   })
@@ -138,7 +133,6 @@ function computeDisabledNotebooks(currentBedId?: string) {
   disabledNotebookIds.value = ids
 }
 
-// 加载：1. 笔记本列表 2. 插件配置
 onMounted(async () => {
   try {
     const response = await Client.lsNotebooks()
@@ -178,10 +172,7 @@ onMounted(async () => {
             <strong>名称: </strong>{{ item.name }}<br/>
             <strong>地址: </strong>{{ item.baseUrl }}<br/>
             <strong>笔记本: </strong>
-            <span 
-              class="notebook-preview" 
-              :title="getNotebookNames(item.notebookIds)"
-            >
+            <span class="notebook-preview" :title="getNotebookNames(item.notebookIds)">
               {{ getNotebookNames(item.notebookIds) }}
             </span>
           </div>
@@ -197,16 +188,14 @@ onMounted(async () => {
     <div v-else>
       <div class="card">
         <div class="form">
-          <!-- 图床类型 -->
           <label>
             <span>图床类型: </span>
-            <select v-model="newImgBedType">
+            <select v-model="newImgBedConfig.type">
               <option :value="ImgBedType.Lsky">兰空图床</option>
               <option :value="ImgBedType.EasyImg">简单图床</option>
             </select>
           </label>
 
-          
           <label>
             <span>绑定笔记：</span>
             <MultiSelect
@@ -217,14 +206,13 @@ onMounted(async () => {
             />
           </label>
 
-          <!-- 名称 -->
           <label>
             <span>图床名称：</span>
             <input type="text" v-model="newImgBedConfig.name" placeholder="请输入图床名称" />
           </label>
 
           <!-- Lsky 配置 -->
-          <div v-if="newImgBedType === ImgBedType.Lsky">
+          <div v-if="newImgBedConfig.type === ImgBedType.Lsky">
             <label>
               <span>图床地址：</span>
               <input type="text" v-model="newImgBedConfig.baseUrl" placeholder="请输入图床地址" />
@@ -254,20 +242,17 @@ onMounted(async () => {
               <input type="text" v-model="newImgBedConfig.token" placeholder="请输入Token"/>
             </label>
           </div>
-          
-          <!-- 上传压缩 -->
+
           <label class="form-row switch-label">
             <span>上传压缩：</span>
             <input type="checkbox" v-model="newImgBedConfig.enableCompress" />
           </label>
 
-          <!-- 默认图床 -->
           <label class="form-row switch-label">
             <span>默认图床：</span>
             <input type="checkbox" v-model="newImgBedConfig.defaultImgBed" />
           </label>
 
-          <!-- 操作按钮 -->
           <div class="form-actions">
             <button class="btn" @click="toListMode">返回</button>
             <button class="btn primary" @click="handleSaveBed">
@@ -279,6 +264,7 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .container {

@@ -1,13 +1,23 @@
-Pic Bed Manager (图床管家)
+# Pic Bed Manager
 
 SiYuan Note Plugin — Pic Bed Manager
 
-Easily paste and upload images to your pic beds in SiYuan Note, and manage multiple pic bed configurations.
+Helps you easily upload images to image hosting services from SiYuan Note and manage multiple image bed configurations.
 
 ✨ Features
 
-- 📤 Paste and upload images without manually selecting files
-
-- ⚙️ Manage multiple pic bed configurations, with support for setting a default pic bed
-
-- 🔄 Automatically match notebook-bound pic beds, using the default if none is bound
+- 📤 Paste & Upload: Copy and paste images to automatically upload to the image bed.
+    
+- ⚙️ Multiple Image Bed Configurations: Manage multiple image beds simultaneously.
+    
+- ⭐ Default Image Bed: Set your commonly used image bed as the default upload target.
+    
+- 📒 Notebook-Specific Settings: Assign different image beds to different notebooks.
+    
+- 🗜 Pre-Upload Compression: Use TinyPNG to compress images before uploading to reduce file size.
+    
+- 🌐 Supported Image Beds:
+    
+    - Lsky Image Bed
+        
+    - EasyImg
