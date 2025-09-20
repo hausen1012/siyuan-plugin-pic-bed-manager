@@ -271,8 +271,6 @@ onMounted(async () => {
   margin: 0 auto;
   font-family: "Segoe UI", Arial, sans-serif;
   color: #333;
-  background: #f9f9f9;
-  padding: 16px;
 }
 
 /* 标题头部 */
