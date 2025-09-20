@@ -18,22 +18,35 @@
       <CompressConfig v-else-if="activeTab === 'compress'" />
       <!-- <OtherConfig v-else-if="activeTab === 'other'" /> -->
     </div>
+
+    <!-- 全局消息组件 -->
+    <Message ref="msgRef" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import ImgBedConfig from "@/components/ImgBedConfig.vue"
 import CompressConfig from "@/components/CompressConfig.vue"
-// import OtherConfig from "@/components/OtherConfig.vue"
+import Message from "@/components/Message.vue"
+
+const msgRef = ref<any>(null)
 
 const activeTab = ref<"imgBed" | "compress" | "other">("imgBed")
 
 const tabs = [
   { key: "imgBed", label: "图床配置" },
   { key: "compress", label: "压缩配置" },
-  // { key: "other", label: "其他配置" },
 ]
+
+onMounted(async () => {
+  // 挂到全局，后面可以直接调用
+  window.$message = {
+    success: (msg: string) => msgRef.value.show(msg, "success"),
+    error: (msg: string) => msgRef.value.show(msg, "error"),
+    info: (msg: string) => msgRef.value.show(msg, "info"),
+  }
+})
 </script>
 
 <style scoped>

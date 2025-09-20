@@ -1,31 +1,31 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
-import { ImgBedConfig, LskyConfig, OtherConfig } from "@/interface/config"
+import { ImgBedConfig, LskyConfig, OtherConfig } from "@/types/config"
+import { SelectItem } from "@/types/components"
 import Client from "@/utils/siyuanSdk"
 import { generateId } from "@/utils/common"
 import { ImgBedType } from "@/constants/imgBedType"
 import MultiSelect from "@/components/MultiSelect.vue"
 import { useConfigStore } from "@/store/configStore"
+import { Mode } from "@/constants/mode"
 
 const configStore = useConfigStore()
 
-const mode = ref<"list" | "add" | "edit">("list")
+const mode = ref<Mode>(Mode.LIST)
 const form = ref<Array<ImgBedConfig>>([])
-const saved = ref(false)
 
 const newImgBedType = ref<ImgBedType>(ImgBedType.Lsky)
 const newImgBedConfig = ref<Partial<ImgBedConfig>>({ notebookIds: [] })
 const editingBedId = ref<string | null>(null)
-const notebookList = ref<{ label: string; value: string }[]>([])
+const notebookList = ref<Array<SelectItem>>([])
 
 async function persistConfig() {
   try {
     await configStore.saveField({ imgBedList: form.value })
-    saved.value = true
-    setTimeout(() => (saved.value = false), 2000)
+    window.$message.info("操作成功")
   } catch (e) {
     console.error(e)
-    alert("保存失败")
+    window.$message.error("操作失败")
   }
 }
 
@@ -33,33 +33,33 @@ function toAddMode() {
   newImgBedConfig.value = { notebookIds: [] }
   newImgBedType.value = ImgBedType.Lsky
   editingBedId.value = null
-  mode.value = "add"
+  mode.value = Mode.ADD
 }
 
 function toEditMode(bed: ImgBedConfig) {
   newImgBedConfig.value = { ...bed }
   newImgBedType.value = bed.type as ImgBedType
   editingBedId.value = bed.id
-  mode.value = "edit"
+  mode.value = Mode.EDIT
 }
 
 function toListMode() {
   newImgBedConfig.value = { notebookIds: [] }
   newImgBedType.value = ImgBedType.Lsky
   editingBedId.value = null
-  mode.value = "list"
+  mode.value = Mode.LIST
 }
 
 async function handleSaveBed() {
   if (!newImgBedConfig.value.name || !newImgBedConfig.value.baseUrl) {
-    alert("请填写图床配置完整信息")
+    window.$message.error("请填写图床配置完整信息")
     return
   }
 
-  if (mode.value === "add") {
+  if (mode.value === Mode.ADD) {
     const id = generateId()
     pushBed({ ...newImgBedConfig.value, id })
-  } else if (mode.value === "edit" && editingBedId.value) {
+  } else if (mode.value === Mode.EDIT && editingBedId.value) {
     const index = form.value.findIndex(b => b.id === editingBedId.value)
     if (index !== -1) {
       form.value[index] = {
@@ -103,17 +103,16 @@ function pushBed(raw: Partial<ImgBedConfig>) {
       token: (raw as OtherConfig).token!,
     }
   } else {
-    throw new Error(`不支持的图床类型: ${newImgBedType.value}`)
+    window.$message.error(`不支持的图床类型: ${newImgBedType.value}`)
+    console.log(`不支持的图床类型: ${newImgBedType.value}`)
   }
 
   form.value.push(bed)
 }
 
 async function removeImgBed(id: string) {
-  if (confirm("确认删除？删除后无法恢复")) {
-    form.value = form.value.filter(bed => bed.id !== id)
-    await persistConfig()
-  }
+  form.value = form.value.filter(bed => bed.id !== id)
+  await persistConfig()
 }
 
 onMounted(async () => {
@@ -122,7 +121,7 @@ onMounted(async () => {
     form.value = Array.isArray(appConfig?.imgBedList) ? appConfig.imgBedList : []
     const response = await Client.lsNotebooks()
     notebookList.value = response.data.notebooks.map(nb => ({
-      label: nb.name,
+      name: nb.name,
       value: nb.id,
     }))
   } catch {
@@ -134,7 +133,7 @@ onMounted(async () => {
 <template>
   <div class="container">
     <!-- 列表界面 -->
-    <div v-if="mode === 'list'">
+    <div v-if="mode === Mode.LIST">
       <header class="header">
         <h2>图床配置</h2>
         <button class="btn primary" @click="toAddMode">新增</button>
@@ -152,10 +151,6 @@ onMounted(async () => {
           </div>
         </li>
       </ul>
-      <!-- 保存成功提示 -->
-      <div v-if="saved" class="alert success">
-        ✅ 配置已保存！
-      </div>
     </div>
 
     <!-- 新增/编辑界面 -->
@@ -231,32 +226,11 @@ onMounted(async () => {
             <input type="checkbox" v-model="newImgBedConfig.defaultImgBed" />
           </label>
 
-          
-          <!-- 笔记本选择 -->
-          <!-- <div class="form-group">
-            <label for="notebooks">绑定笔记本：</label>
-            <select
-              id="notebooks"
-              v-model="newImgBedConfig.notebookIds"
-              multiple
-              class="select-multi"
-            >
-              <option
-                v-for="nb in notebookList"
-                :key="nb.value"
-                :value="nb.value"
-              >
-                {{ nb.label }}
-              </option>
-            </select>
-          </div> -->
-
-
           <!-- 操作按钮 -->
           <div class="form-actions">
             <button class="btn" @click="toListMode">返回</button>
             <button class="btn primary" @click="handleSaveBed">
-              {{ mode === "add" ? "保存" : "更新" }}
+              {{ mode === Mode.ADD ? "保存" : "更新" }}
             </button>
           </div>
         </div>
@@ -450,17 +424,6 @@ onMounted(async () => {
   background: #fff1f0;
 }
 
-/* 保存成功提示 */
-.alert.success {
-  margin-top: 16px;
-  padding: 12px 16px;
-  background-color: #f6ffed;
-  border: 1px solid #b7eb8f;
-  color: #389e0d;
-  border-radius: 6px;
-  text-align: center;
-}
-
 /* 底部操作栏 */
 .form-actions {
   margin-top: 10px;
@@ -471,17 +434,4 @@ onMounted(async () => {
   position: sticky;
   bottom: 0;
 }
-
-/* 响应式优化 */
-@media (max-width: 600px) {
-  .list-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .actions {
-    margin-top: 10px;
-  }
-}
-
 </style>

@@ -27,17 +27,12 @@
       <!-- 保存按钮 -->
       <button type="submit" class="btn primary">保存配置</button>
     </form>
-
-    <!-- 保存成功提示 -->
-    <div v-if="saved" class="alert success">
-      ✅ 配置已保存！
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
-import { CompressConfig } from "@/interface/config"
+import { CompressConfig } from "@/types/config"
 import { useConfigStore } from "@/store/configStore"
 
 const configStore = useConfigStore()
@@ -48,15 +43,14 @@ const form = ref<CompressConfig>({
   apiKey: "",
   enable: false
 })
-const saved = ref(false)
 
 async function saveConfig() {
   try {
     await configStore.saveField({ compressConfig: form.value })
-    saved.value = true
-   setTimeout(() => (saved.value = false), 3000)
+    window.$message.info("操作成功")
   } catch (e) {
-    console.error("保存压缩配置失败", e)
+    console.error(e)
+    window.$message.error("操作失败")
   }
 }
 
@@ -199,29 +193,5 @@ input[type="text"]:focus {
 
 .btn.primary:hover {
   background: #e6f0ff;
-}
-
-/* 保存成功提示 */
-.alert.success {
-  margin-top: 16px;
-  padding: 12px 16px;
-  background-color: #f6ffed;
-  border: 1px solid #b7eb8f;
-  color: #389e0d;
-  border-radius: 6px;
-  text-align: center;
-}
-
-/* 响应式优化 */
-@media (max-width: 600px) {
-  .form-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .form-row span {
-    min-width: auto;
-    margin-bottom: 4px;
-  }
 }
 </style>

@@ -1,4 +1,4 @@
-import { EasyImgrOptions, UploadResult } from "@/interface/uploader"
+import { EasyImgrOptions, UploadResult } from "@/types/uploader"
 
 export default class EasyImgUploader {
   private baseUrl: string

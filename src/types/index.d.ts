@@ -122,9 +122,11 @@ interface Window {
     ws: any;
     languages: any;
   };
-  _sy_plugin_lsky_upload: {
-    [key: string]: any;
-  };
+  $message: {
+    success(msg: string): void
+    error(msg: string): void
+    info(msg: string): void
+  }
 }
 
 

@@ -1,6 +1,6 @@
 // src/utils/configManager.ts
 import type { Plugin } from "siyuan"
-import type { AppConfig } from "@/interface/config"
+import type { AppConfig } from "@/types/config"
 import { CONFIG_FILE } from "@/constants/plugin"
 
 // 内存缓存

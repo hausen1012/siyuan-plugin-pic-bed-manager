@@ -1,4 +1,4 @@
-import { LskyOptions, UploadResult } from "@/interface/uploader"
+import { LskyOptions, UploadResult } from "@/types/uploader"
 
 export default class LskyUploader {
   private baseUrl: string

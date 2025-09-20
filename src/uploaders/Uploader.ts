@@ -1,6 +1,6 @@
 // src/utils/uploader.ts
-import type { ImgBedConfig } from "@/interface/config"
-import type { UploadResult } from "@/interface/uploader"
+import type { ImgBedConfig } from "@/types/config"
+import type { UploadResult } from "@/types/uploader"
 import LskyUploader from "@/uploaders/LskyUploader"
 import OtherUploader from "@/uploaders/EasyImgUploader"
 import {ImgBedType } from "@/constants/imgBedType"
