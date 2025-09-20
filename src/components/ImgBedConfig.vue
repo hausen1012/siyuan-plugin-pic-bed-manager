@@ -66,6 +66,7 @@ async function handleSaveBed() {
         ...form.value[index],
         ...newImgBedConfig.value,
         id: editingBedId.value,
+        token: "",
       } as ImgBedConfig
     }
   }

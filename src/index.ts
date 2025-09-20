@@ -10,12 +10,11 @@ import { useConfigStore } from "@/store/configStore"
  
 export default class ImgUploadPlugin extends Plugin {
 
-  private configStore = useConfigStore()  // 存成成员
+  private configStore = useConfigStore()
 
   async onload() {
     // 插件启动时加载数据
     this.configStore.init(this)
-    console.log(this.configStore)
     await this.configStore.loadConfig()
   }
 
@@ -51,7 +50,7 @@ export default class ImgUploadPlugin extends Plugin {
 
   private readonly picturePasteEventListener = async (e: CustomEvent) => {
 
-    console.log("detail: ", e.detail)
+    //console.log("detail: ", e.detail)
     // 阻止默认事件
     e.preventDefault()
     try {
