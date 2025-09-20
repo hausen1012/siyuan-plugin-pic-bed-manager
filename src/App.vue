@@ -40,41 +40,69 @@ const tabs = [
 .app-container {
   display: flex;
   min-height: 600px;
-  /* overflow: hidden; */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #f9f9f9;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 /* 左侧导航 */
 .sidebar {
   width: 140px;
-  background-color: #f5f5f5;
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
+  background-color: #F6F6F6;
+  border-right: 1px solid #eee;
   display: flex;
   flex-direction: column;
 }
 
 .menu-item {
-  padding: 16px 24px;
+  padding: 14px 20px;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s;
+  font-size: 14px;
+  color: #555;
+  transition: all 0.2s ease;
 }
 
 .menu-item:hover {
-  background-color: #e6f7ff;
+  background-color: #f0f5ff;
 }
 
 .menu-item.active {
-  background-color: #1890ff;
-  color: white;
+  background-color: #E4E4E4;
+  color: #000;
+  font-weight: 500;
 }
 
 /* 右侧内容 */
 .content {
   flex: 1;
   padding: 24px;
-  background-color: white;
-  border-bottom-right-radius: 12px;
+  background-color: #fff;
+  border-left: 1px solid #eee;
+  overflow-y: auto;
+}
+
+/* 响应式优化 */
+@media (max-width: 700px) {
+  .app-container {
+    flex-direction: column;
+    border-radius: 0;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .menu-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .content {
+    padding: 16px;
+  }
 }
 </style>

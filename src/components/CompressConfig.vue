@@ -78,6 +78,8 @@ onMounted(async () => {
   margin: 0 auto;
   font-family: "Segoe UI", Arial, sans-serif;
   color: #333;
+  background: #f9f9f9;
+  padding: 16px;
 }
 
 .header {
@@ -90,15 +92,16 @@ onMounted(async () => {
 .header h2 {
   font-size: 20px;
   font-weight: 600;
+  color: #222;
 }
 
 /* 表单卡片 */
 .form {
   border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 10px;
+  padding: 20px;
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -108,57 +111,59 @@ onMounted(async () => {
 .form-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   font-size: 14px;
   color: #555;
 }
 
 .form-row span {
-  min-width: 80px; /* 标签宽度，可根据需要调整 */
+  min-width: 80px;
 }
 
 /* 输入框 */
 input[type="text"] {
   flex: 1;
-  padding: 8px 10px;
-  border: 1px solid #ccc;
+  padding: 6px 10px;
+  border: 1px solid #d9d9d9;
   border-radius: 6px;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input[type="text"]:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 4px rgba(24,144,255,0.3);
+  border-color: #1677ff;
+  box-shadow: 0 0 4px rgba(22,119,255,0.2);
   outline: none;
 }
 
 /* 开关样式 */
 .switch-label {
   gap: 8px;
+  display: flex;
+  align-items: center;
 }
 
 .switch-label input[type="checkbox"] {
-  width: 40px;
-  height: 20px;
+  width: 36px;
+  height: 18px;
   -webkit-appearance: none;
   background: #ccc;
   outline: none;
-  border-radius: 20px;
+  border-radius: 18px;
   position: relative;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 .switch-label input[type="checkbox"]:checked {
-  background: #1890ff;
+  background: #1677ff;
 }
 
 .switch-label input[type="checkbox"]::before {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 1px;
+  left: 1px;
   width: 16px;
   height: 16px;
   background: #fff;
@@ -167,33 +172,35 @@ input[type="text"]:focus {
 }
 
 .switch-label input[type="checkbox"]:checked::before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
 /* 按钮样式 */
 .btn {
-  padding: 7px 14px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
+  padding: 6px 14px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  color: #444;
   transition: all 0.2s ease;
 }
 
 .btn:hover {
-  background: #f0f0f0;
+  border-color: #999;
+  background: #fafafa;
 }
 
+/* 主操作按钮 */
 .btn.primary {
-  background: #1890ff;
-  color: white;
-  border-color: #1890ff;
+  border-color: #1677ff;
+  color: #1677ff;
+  background: #fff;
 }
 
 .btn.primary:hover {
-  background: #40a9ff;
-  border-color: #40a9ff;
+  background: #e6f0ff;
 }
 
 /* 保存成功提示 */

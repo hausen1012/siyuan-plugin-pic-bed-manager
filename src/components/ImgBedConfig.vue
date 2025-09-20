@@ -271,6 +271,8 @@ onMounted(async () => {
   margin: 0 auto;
   font-family: "Segoe UI", Arial, sans-serif;
   color: #333;
+  background: #f9f9f9;
+  padding: 16px;
 }
 
 /* 标题头部 */
@@ -284,6 +286,7 @@ onMounted(async () => {
 .header h2 {
   font-size: 20px;
   font-weight: 600;
+  color: #222;
 }
 
 /* 列表 */
@@ -297,31 +300,31 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border: 1px solid #eee;
-  border-radius: 10px;
-  margin-bottom: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
   background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .list-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
 }
 
 .actions button {
   margin-left: 8px;
 }
 
-/* 表单卡片 */
+/* 卡片/表单 */
 .card {
   border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 10px;
+  padding: 20px;
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   max-height: 80vh;
   overflow-y: auto;
   display: flex;
@@ -332,18 +335,15 @@ onMounted(async () => {
   margin-bottom: 16px;
   font-size: 18px;
   font-weight: 600;
-  border-left: 4px solid #1890ff;
+  border-left: 3px solid #1677ff;
   padding-left: 8px;
+  color: #222;
 }
 
 .form label {
-  /* display: block;
-  margin-bottom: 14px;
-  font-size: 14px;
-  color: #555; */
-  display: flex !important;
-  align-items: center; /* 垂直居中 */
-  gap: 8px;            /* 间距，可调 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 14px;
   font-size: 14px;
   color: #555;
@@ -356,9 +356,8 @@ onMounted(async () => {
 .form input,
 .form select {
   width: 100%;
-  padding: 8px 10px;
-  margin-top: 6px;
-  border: 1px solid #ccc;
+  padding: 6px 10px;
+  border: 1px solid #d9d9d9;
   border-radius: 6px;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -366,15 +365,14 @@ onMounted(async () => {
 
 .form input:focus,
 .form select:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 4px rgba(24,144,255,0.3);
+  border-color: #1677ff;
+  box-shadow: 0 0 4px rgba(22,119,255,0.2);
   outline: none;
 }
 
 .form input[type="checkbox"] {
-  margin-top: 0; /* 清除margin-top: 6px影响 */
+  margin-top: 0;
 }
-
 
 .switch-label {
   gap: 8px;
@@ -383,19 +381,19 @@ onMounted(async () => {
 }
 
 .switch-label input[type="checkbox"] {
-  width: 40px;
-  height: 20px;
+  width: 36px;
+  height: 18px;
   -webkit-appearance: none;
   background: #ccc;
   outline: none;
-  border-radius: 20px;
+  border-radius: 18px;
   position: relative;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 .switch-label input[type="checkbox"]:checked {
-  background: #1890ff;
+  background: #1677ff;
 }
 
 .switch-label input[type="checkbox"]::before {
@@ -411,57 +409,47 @@ onMounted(async () => {
 }
 
 .switch-label input[type="checkbox"]:checked::before {
-  transform: translateX(20px);
-}
-
-
-/* 底部按钮 */
-.form-actions {
-  margin-top: 10px;
-  text-align: right;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-  background: #fff;
-  position: sticky;
-  bottom: 0;
+  transform: translateX(18px);
 }
 
 /* 按钮样式 */
 .btn {
   margin-left: 8px;
-  padding: 7px 14px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
+  padding: 6px 14px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  color: #444;
   transition: all 0.2s ease;
 }
 
 .btn:hover {
-  background: #f0f0f0;
+  border-color: #999;
+  background: #fafafa;
 }
 
+/* 主操作按钮 */
 .btn.primary {
-  background: #1890ff;
-  color: white;
-  border-color: #1890ff;
+  border-color: #1677ff;
+  color: #1677ff;
+  background: #fff;
 }
 
 .btn.primary:hover {
-  background: #40a9ff;
-  border-color: #40a9ff;
+  background: #e6f0ff;
 }
 
+/* 危险按钮 */
 .btn.danger {
-  background: #ff4d4f;
-  color: white;
   border-color: #ff4d4f;
+  color: #ff4d4f;
+  background: #fff;
 }
 
 .btn.danger:hover {
-  background: #ff7875;
-  border-color: #ff7875;
+  background: #fff1f0;
 }
 
 /* 保存成功提示 */
@@ -475,6 +463,17 @@ onMounted(async () => {
   text-align: center;
 }
 
+/* 底部操作栏 */
+.form-actions {
+  margin-top: 10px;
+  text-align: right;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+}
+
 /* 响应式优化 */
 @media (max-width: 600px) {
   .list-item {
@@ -486,4 +485,5 @@ onMounted(async () => {
     margin-top: 10px;
   }
 }
+
 </style>
